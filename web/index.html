@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Todo App </title>
+
+    <link rel="stylesheet" href="static/css/style.css" />
+    <script src="https://unpkg.com/htmx.org@1.9.5"
+        integrity="sha384-xcuj3WpfgjlKF+FXhSQFQ0ZNr39ln+hwjN3npfM9VBnUskLolQAcN80McRIVOPuO"
+        crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <div class="h-screen flex flex-col items-center justify-center">
+        <h1 class="text-3xl font-bold mt-10 mb-10">Todo App</h1>
+
+        <div class="grid grid-cols-5 gap-2 grid-flow-col max-w-3xl">
+            <div class="border-black col-span-3">
+                <h2 class="mb-2 text-lg font-semibold text-gray-900">Things to do:</h2>
+                {{ block "todo-list" . }}
+                <ul id="todo-list"
+                    class="overflow-auto pr-4 max-h-80 w-96 space-y-1 text-gray-800 list-disc list-inside">
+                    {{ if not .todos }} 
+                        <li class="flex flex-row space-x-3 items-center justify-between">
+                            There are no todo items yet, you can add items using the form on the right
+                        </li>
+                    {{ end }}
+
+                    {{ range .todos }}
+                    {{ block "todo-list-item" . }}
+                    <li class="flex flex-row space-x-3 items-center justify-between">
+                        <span
+                            class="grow text-base {{if .Done }} line-through {{ end }} font-normal leading-tight text-gray-700 dark:text-gray-700">
+                            <span class="font-bold leading-tight text-gray-900 dark:text-gray-900">
+                                {{.Todo}}
+                            </span>
+                            -
+                            {{.Description}}
+                        </span>
+                        <div class="flex-none">
+                            <span hx-post="/check-done" hx-vals='{"Id": "{{ .Id }}"}' hx-target="#todo-list">
+                                <svg class="flex-shrink-0 w-6 h-6 hover:text-green-400 text-green-600 "
+                                    aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+                                    viewBox="0 0 20 20">
+                                    <path
+                                        d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z" />
+                                </svg>
+                            </span>
+                            <span hx-post="/delete" hx-vals='{"Id": "{{ .Id }}"}' hx-target="#todo-list">
+                                <svg class="flex-shrink-0 w-6 h-6 hover:text-red-400 text-red-600 " aria-hidden="true"
+                                    viewBox="0 0 22.407 22.407" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M 11.188,-1.373291e-7 C 17.376,-1.373291e-7 22.407,5.0309999 22.407,11.219 c 0,6.188 -5.031,11.188 -11.219,11.188 C 5,22.407 0,17.407 0,11.219 0,5.0309999 5,-1.373291e-7 11.188,-1.373291e-7 Z M 11.25,12.844 l 3.563,3.594 c 0.438,0.438 1.156,0.438 1.594,0 0.406,-0.406 0.406,-1.125 0,-1.563 l -3.563,-3.594 3.563,-3.5940001 c 0.406,-0.438 0.406,-1.156 0,-1.563 -0.438,-0.438 -1.156,-0.438 -1.594,0 l -3.563,3.594 -3.563,-3.594 c -0.438,-0.438 -1.156,-0.438 -1.594,0 -0.406,0.406 -0.406,1.125 0,1.563 L 9.656,11.281 6.093,14.875 c -0.406,0.438 -0.406,1.156 0,1.563 0.438,0.438 1.156,0.438 1.594,0 z">
+                                    </path>
+                                </svg>
+                            </span>
+                        </div>
+                    </li>
+                    {{ end }}
+                    {{ end }}
+                </ul>
+                {{ end }}
+            </div>
+            <div class="col-span-2">
+                <h2 class="mb-2 text-lg font-semibold text-gray-900">Add Todo Items:</h2>
+                <div class="w-full">
+                    <form hx-post="/add" hx-target="#todo-list" 
+                        class="bg-white shadow-md rounded px-4 pt-4 pb-6 mb-4">
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="todo">
+                                To do
+                            </label>
+                            <input
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                name="todo" id="todo" type="text" placeholder="To do">
+                        </div>
+                        <div class="mb-6">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="description">
+                                Description
+                            </label>
+                            <textarea rows="4"
+                                class="block resize-y shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                name="description" id="description" type="text"
+                                placeholder="Description..."> </textarea>
+                        </div>
+                        <div class="flex items-center justify-end">
+                            <button
+                                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                                type="submit">
+                                Submit
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div>
+            <p class="mt-8">This is todo app written in go with htmx frontend</p>
+        </div>
+    </div>
+</body>
+
+</html>
