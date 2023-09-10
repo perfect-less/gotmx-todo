@@ -20,7 +20,7 @@ const IDLENGTH = 10
 var todos []Todo
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
-//go:embed web/static/css/style.css web/index.html web/htmx.min.js web/static/spinner.svg
+//go:embed web/static/css/style.css web/index.html web/htmx.min.js
 var content embed.FS
 
 func executeTodoListTemplate(w http.ResponseWriter) error {
