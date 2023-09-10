@@ -8,7 +8,9 @@
   <a href="#Build">Build</a> 
 </p>
 
-![demo](images/demo.gif)
+<p align="center">
+<img src="images/demo.gif"/>
+</p>
 <h4 align="center">Todo app written in Go and HTMX compiled into single binary</h4>
 
 
