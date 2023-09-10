@@ -20,10 +20,10 @@
                 {{ block "todo-list" . }}
                 <ul id="todo-list"
                     class="overflow-auto pr-4 max-h-80 w-96 space-y-1 text-gray-800 list-disc list-inside">
-                    {{ if not .todos }} 
-                        <li class="flex flex-row space-x-3 items-center justify-between">
-                            There are no todo items yet, you can add items using the form on the right
-                        </li>
+                    {{ if not .todos }}
+                    <li class="flex flex-row space-x-3 items-center justify-between">
+                        There are no todo items yet, you can add items using the form on the right
+                    </li>
                     {{ end }}
 
                     {{ range .todos }}
@@ -64,8 +64,7 @@
             <div class="col-span-2">
                 <h2 class="mb-2 text-lg font-semibold text-gray-900">Add Todo Items:</h2>
                 <div class="w-full">
-                    <form hx-post="/add" hx-target="#todo-list" 
-                        class="bg-white shadow-md rounded px-4 pt-4 pb-6 mb-4">
+                    <form hx-post="/add" hx-target="#todo-list" class="bg-white shadow-md rounded px-4 pt-4 pb-6 mb-4">
                         <div class="mb-4">
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="todo">
                                 To do
@@ -84,6 +83,28 @@
                                 placeholder="Description..."> </textarea>
                         </div>
                         <div class="flex items-center justify-end">
+                            <div>
+                                <button hx-get="/save" hx-swap="none" hx-indicator="#spinner"
+                                    class="mx-4 bg-green-500 hover:bg-green-700 text-white font-bold py-2 pl-4 pr-2 rounded focus:outline-none focus:shadow-outline"
+                                    type="save">
+                                    <div class="flex flex-row items-center">
+                                        Save
+
+                                        <svg id="spinner" class="text-white htmx-indicator w-4 h-4 ml-2"
+                                            viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                            <path
+                                                d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z"
+                                                opacity=".25" />
+                                            <path
+                                                d="M10.14,1.16a11,11,0,0,0-9,8.92A1.59,1.59,0,0,0,2.46,12,1.52,1.52,0,0,0,4.11,10.7a8,8,0,0,1,6.66-6.61A1.42,1.42,0,0,0,12,2.69h0A1.57,1.57,0,0,0,10.14,1.16Z">
+                                                <animateTransform attributeName="transform" type="rotate" dur="0.75s"
+                                                    values="0 12 12;360 12 12" repeatCount="indefinite" />
+                                            </path>
+                                        </svg>
+                                    </div>
+                                </button>
+                            </div>
+
                             <button
                                 class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                                 type="submit">

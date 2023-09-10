@@ -2,69 +2,26 @@ package main
 
 import (
 	"embed"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
-	"math/rand"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"text/template"
 	"time"
 )
 
-type Todo struct {
-	Id          string
-	Todo        string
-	Description string
-	Done        bool
-}
-
 const PORT string = "8080"
 const IDLENGTH = 10
 
 var todos []Todo
-
-//go:embed web/static/css/style.css web/index.html web/htmx.min.js
-var content embed.FS
-
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
-
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
-func randSeq(n int) string {
-	b := make([]rune, n)
-	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
-	}
-	return string(b)
-}
-
-func addNewTodo(todo string, description string) {
-	newId := ""
-	for {
-		newId = randSeq(IDLENGTH)
-
-		isUnique := true
-		for i := range todos {
-			if todos[i].Id == newId {
-				isUnique = false
-				break
-			}
-		}
-		if isUnique {
-			break
-		}
-	}
-
-	todos = append(todos, Todo{Id: newId, Todo: todo, Description: description})
-}
-
-func removeByIndex(slice []Todo, s int) []Todo {
-	return append(slice[:s], slice[s+1:]...)
-}
+//go:embed web/static/css/style.css web/index.html web/htmx.min.js web/static/spinner.svg
+var content embed.FS
 
 func executeTodoListTemplate(w http.ResponseWriter) error {
 	temp := template.Must(template.ParseFS(content, "web/index.html"))
@@ -154,16 +111,59 @@ func handleDelete(w http.ResponseWriter, r *http.Request) {
 	executeTodoListTemplate(w)
 }
 
+func handleSave(w http.ResponseWriter, r *http.Request) {
+	jBytes, err := json.MarshalIndent(todos, "", " ")
+	if err != nil {
+		fmt.Printf("err on json.MarshallIndent: %v\n", err)
+	}
+
+	err = os.WriteFile("todos.save", jBytes, 0644)
+	if err != nil {
+		fmt.Printf("err on os.WriteFile: %v\n", err)
+	}
+
+	time.Sleep(1 * time.Second)
+}
+
+func loadSave() bool {
+	_, err := os.Stat("todos.save")
+	if err == nil {
+		jsonFile, err := os.Open("todos.save")
+		if err != nil {
+			fmt.Printf("err: %v\n", err)
+			return false
+		}
+
+		jsonBytes, err := io.ReadAll(jsonFile)
+		if err != nil {
+			fmt.Printf("err: %v\n", err)
+			return false
+		}
+
+		err = json.Unmarshal(jsonBytes, &todos)
+		if err != nil {
+			return false
+		}
+	} else {
+		return false
+	}
+
+	return true
+}
+
 func main() {
 	fmt.Println("Running gotmx")
 
-	addNewTodo("Install gotmx-todo", "You've downloaded and installed gotmx-todo on your device, click the check button on the right to mark task as done")
-	addNewTodo("Write essays", "Don't forget to write your essay assignment for CS101 course.")
+	if !loadSave() {
+		addNewTodo("Install gotmx-todo", "You've downloaded and installed gotmx-todo on your device, click the check button on the right to mark task as done")
+		addNewTodo("Write essays", "Don't forget to write your essay assignment for CS101 course.")
+	}
 
 	http.HandleFunc("/", handleLanding)
 	http.HandleFunc("/add", handleAdd)
 	http.HandleFunc("/check-done", handleCheckDone)
 	http.HandleFunc("/delete", handleDelete)
+	http.HandleFunc("/save", handleSave)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(content))))
 
 	fmt.Printf("Listening to: http://localhost:%s\n", PORT)
