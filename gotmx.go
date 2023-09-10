@@ -1,6 +1,7 @@
 package main
 
 import (
+	"embed"
 	"fmt"
 	"io"
 	"log"
@@ -23,6 +24,9 @@ const PORT string = "8080"
 const IDLENGTH = 10
 
 var todos []Todo
+
+//go:embed web/static/css/style.css web/index.html web/htmx.min.js
+var content embed.FS
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
@@ -63,7 +67,7 @@ func removeByIndex(slice []Todo, s int) []Todo {
 }
 
 func executeTodoListTemplate(w http.ResponseWriter) error {
-	temp := template.Must(template.ParseFiles("./web/index.html"))
+	temp := template.Must(template.ParseFS(content, "web/index.html"))
 	todosData := map[string][]Todo{
 		"todos": todos,
 	}
@@ -77,7 +81,7 @@ func executeTodoListTemplate(w http.ResponseWriter) error {
 }
 
 func handleLanding(w http.ResponseWriter, r *http.Request) {
-	var temp = template.Must(template.ParseFiles("./web/index.html"))
+	var temp = template.Must(template.ParseFS(content, "web/index.html"))
 	todosData := map[string][]Todo{
 		"todos": todos,
 	}
@@ -160,7 +164,7 @@ func main() {
 	http.HandleFunc("/add", handleAdd)
 	http.HandleFunc("/check-done", handleCheckDone)
 	http.HandleFunc("/delete", handleDelete)
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./web/static"))))
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(content))))
 
 	fmt.Printf("Listening to: http://localhost:%s\n", PORT)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", PORT), nil))
